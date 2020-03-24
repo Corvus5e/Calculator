@@ -88,40 +88,37 @@ double Parsing::Calculator::CalculateExpression(const char* expression)
 	return CalculateExp(m_scaner->GetNextLexeme(), 0, bc);
 }
 
-double Parsing::Calculator::CalculateExp(std::string lexeme, int priority, int& bc)
+double Parsing::Calculator::CalculateExp(std::string lexeme, int priority, int& bracketsCount)
 {
 	double result = 0.0;
 
+	double operandOne = 0.0;
+
 	if (lexeme == "(")
 	{
-		bc++;
+		bracketsCount++;
 
-		result = CalculateExp(m_scaner->GetNextLexeme(), 0, bc);
+		result = CalculateExp(m_scaner->GetNextLexeme(), 0, bracketsCount);
 
-		if (bc == 0)
-			return result;
+		operandOne = result;
 
 	}
-
-	if (lexeme == ")")
+	else //if(IsNumber(lexeme))
 	{
-		bc--;
-		return 0.0;
+		operandOne = atof(lexeme.c_str());
 	}
-
-	//if(IsNumber(lexeme))
-	double op1 = atof(lexeme.c_str());
 
 	std::string nexetLex;
+
 	if (!m_scaner->GetNextLexeme(nexetLex))
 	{
-		return op1;
+		return operandOne;
 	}
 
 	if (nexetLex == ")")
 	{
-		bc--;
-		return op1;
+		bracketsCount--;
+		return operandOne;
 	}
 
 	std::string operators{ "+-*/^" };
@@ -129,59 +126,35 @@ double Parsing::Calculator::CalculateExp(std::string lexeme, int priority, int& 
 
 	if (pos != std::string::npos)
 	{
-		int pr = pos + 1;
+		int currentPriority = pos + 1;
 
-		if (pr < priority)
+		if (currentPriority < priority)
 		{
 			m_scaner->MoveCurrPos((nexetLex.size()));
-			return op1;
+			return operandOne;
 		}
 
-		double op2 = CalculateExp(m_scaner->GetNextLexeme(), pr, bc);
+		double operandTwo = CalculateExp(m_scaner->GetNextLexeme(), currentPriority, bracketsCount);
 
 		switch (operators[pos])
 		{
 		case '+':
-			result = op1 + op2; break;
+			result = operandOne + operandTwo; break;
 		case '-':
-			result = op1 - op2; break;
+			result = operandOne - operandTwo; break;
 		case '*':
-			result = op1 * op2; break;
+			result = operandOne * operandTwo; break;
 		case '/':
-			result = op1 / op2; break;
+			result = operandOne / operandTwo; break;
 		default:
 			break;
 		}
 
-
-
-		return CalculateExp(std::to_string(result), priority, bc);
+		return CalculateExp(std::to_string(result), priority, bracketsCount);
 	}
-
-
 
 	return 0.0;
 }
-
-//double CalculateExpr(std::string& lexeme, Scaner& sc, int priority)
-//{
-//	if (lexeme == "(")
-//	{
-//		std::string nextLexeme = GetNextLexeme(sc);
-//
-//		auto result = CalculateExpr(nextLexeme, sc, 0);
-//
-//		if (GetNextLexeme(sc) != ")")
-//		{
-//			throw std::runtime_error("synax error: expected )");
-//		}
-//
-//		return result;
-//	}
-//
-//	auto op1 = std::stod(lexeme.c_str()); // throws 
-//
-//}
 
 
 long double Parsing::PrintLexemes(const char* expression)
