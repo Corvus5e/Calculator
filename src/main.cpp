@@ -12,11 +12,15 @@ int main(int argc, char* argv[])
 	if (argc < 2)
 	{
 		PrintHelp();
+		return 0;
 	}
 
 	try
 	{
-		cout << Calculator::CalculateExpression(argv[1]) << endl;
+		cout << Parsing::PrintLexemes(argv[1]) << endl;
+
+		Parsing::Calculator c;
+		cout << c.CalculateExpression(argv[1]) << endl;
 	}
 	catch (std::exception& e)
 	{
